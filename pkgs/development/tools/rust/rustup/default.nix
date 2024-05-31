@@ -12,6 +12,7 @@
 , Security
 , CoreServices
 , libiconv
+, path
 , xz
 }:
 
@@ -48,7 +49,12 @@ rustPlatform.buildRustPackage rec {
   checkFeatures = [ ];
 
   patches = lib.optionals stdenv.isLinux [
-    (runCommand "0001-dynamically-patchelf-binaries.patch" { CC = stdenv.cc; patchelf = patchelf; libPath = "$ORIGIN/../lib:${libPath}"; } ''
+    (runCommand "0001-dynamically-patchelf-binaries.patch"
+      {
+        CC = stdenv.cc;
+        patchelf = patchelf;
+        libPath = "${libPath}";
+      } ''
       export dynamicLinker=$(cat $CC/nix-support/dynamic-linker)
       substitute ${./0001-dynamically-patchelf-binaries.patch} $out \
         --subst-var patchelf \
@@ -96,7 +102,22 @@ rustPlatform.buildRustPackage rec {
     # Note: fish completion script is not supported.
     $out/bin/rustup completions bash cargo > "$out/share/bash-completion/completions/cargo"
     $out/bin/rustup completions zsh cargo >  "$out/share/zsh/site-functions/_cargo"
+
+    # add a wrapper script for ld.lld
+    mkdir -p $out/nix-support
+    substituteAll ${path + "/pkgs/build-support/wrapper-common/utils.bash"} $out/nix-support/utils.bash
+    substituteAll ${path + "/pkgs/build-support/bintools-wrapper/add-flags.sh"} $out/nix-support/add-flags.sh
+    substituteAll ${path + "/pkgs/build-support/bintools-wrapper/add-hardening.sh"} $out/nix-support/add-hardening.sh
+    export prog='$PROG'
+    export use_response_file_by_default=0
+    substituteAll  ${path + "/pkgs/build-support/bintools-wrapper/ld-wrapper.sh"} $out/nix-support/ld-wrapper.sh
+    chmod +x $out/nix-support/ld-wrapper.sh
   '';
+
+  env = lib.optionalAttrs (pname == "rustup") {
+    inherit (stdenv.cc.bintools) expandResponseParams shell suffixSalt wrapperName coreutils_bin;
+    hardening_unsupported_flags = "";
+  };
 
   meta = with lib; {
     description = "The Rust toolchain installer";
