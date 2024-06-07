@@ -11,9 +11,9 @@
 , overrideSDK
 , Security
 
-, storeDir ? "/nix/store"
-, stateDir ? "/nix/var"
-, confDir ? "/etc"
+, storeDir ? "/data/data/com.termux/files/usr/nix/store"
+, stateDir ? "/data/data/com.termux/files/usr/nix/var"
+, confDir ? "/data/data/com.termux/files/usr/etc"
 }:
 let
   boehmgc-nix_2_3 = boehmgc.override { enableLargeConfig = true; };
