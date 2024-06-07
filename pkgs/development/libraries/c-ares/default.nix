@@ -16,7 +16,8 @@ stdenv.mkDerivation rec {
   version = "1.27.0";
 
   src = fetchurl {
-    url = "https://c-ares.org/download/${pname}-${version}.tar.gz";
+    url = "https://github.com/c-ares/c-ares/releases/download/cares-1_27_0/c-ares-1.27.0.tar.gz";
+    # url = "https://c-ares.org/download/${pname}-${version}.tar.gz";
     hash = "sha256-CnK+ZpWZVcQ+KvL70DQY6Cor1UZGBOyaYhR+N6zrQgs=";
   };
 
